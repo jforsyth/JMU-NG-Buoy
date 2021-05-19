@@ -62,6 +62,11 @@ void setup() {
 }
 
 void loop() {
+
+  //print out leading '@' to know we have a good message
+  Serial.print('@');
+  Serial.print(',');
+  
   /**
    * Collect data from the Environmental Combo Board
    */
@@ -87,7 +92,7 @@ void loop() {
 
   //create init variables for CO2 and TVOC. Give them some initial value
   //so we can know if they are not "fresh" data from the sensor.
-  int CO2 = -1;
+  /*int CO2 = -1;
   int TVOC = -1;
 
   //check to see if CCS sensor is ready
@@ -106,7 +111,7 @@ void loop() {
 
   Serial.print(",");
   Serial.print(TVOC); //don't have to deal with decimals are result is integer
-
+  */
   /**
    * Collect data from the accelerometer
    */
@@ -127,14 +132,14 @@ void loop() {
   Serial.print(yAccel,3); //print to three decimal places
 
   Serial.print(",");
-  Serial.print(zAccel,3); //print to three decimal places
+  Serial.println(zAccel,3); //print to three decimal places
 
 ////////////////////// Print Out the Time //////////////////////
   //get the number of milliseconds since the processor was turned on
-  long runTime = millis();
+  //long runTime = millis();
 
-  Serial.print(",");
-  Serial.println(runTime); //print out the time as a new line to end this line
+  //Serial.print(",");
+  //Serial.println(runTime); //print out the time as a new line to end this line
 
 
   //take a 1000ms break. Don't overwhelm the bus and print screen
