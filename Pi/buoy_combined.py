@@ -46,7 +46,7 @@ def identify_ports():
                 # print("Found the GPS board...")
                 gps_device = port_name
             elif splits[0] == '!':
-                #print("Found the Radio board...")
+                # print("Found the Radio board...")
                 radio_device = port_name
             else:
                 # print("Unknown board..")
@@ -59,17 +59,18 @@ def identify_ports():
 
     return gps_device, sensing_device, radio_device
 
+
 def get_GPS_update(gps):
     if not gps.has_fix:
         # Try again if we don't have a fix yet.
-        #print("Waiting for fix...")
+        # print("Waiting for fix...")
 
         # continue to loop (while)
-        return -1,-1
+        return -1, -1
 
     # print the lat and long to the PI screen up to 6 decimal places
-    print("Lat: {0:.6f}".format(gps.latitude))
-    print("Long: {0:.6f}".format(gps.longitude))
+    #print("Lat: {0:.6f}".format(gps.latitude))
+    #print("Long: {0:.6f}".format(gps.longitude))
 
     ##prepare data for transmission through Radio connected via USB
 
@@ -82,6 +83,7 @@ def get_GPS_update(gps):
     long_in_string = str(limited_long)
 
     return lat_in_string, long_in_string
+
 
 def get_environment_update(port):
     ##read until line new line
@@ -111,7 +113,8 @@ def get_environment_update(port):
         yAccel = float(data[6])
         zAccel = float(data[7])
 
-    return (humidity,pressure,altitude,temp,xAccel,yAccel,zAccel)
+    return (humidity, pressure, altitude, temp, xAccel, yAccel, zAccel)
+
 
 if __name__ == "__main__":
 
@@ -128,18 +131,23 @@ if __name__ == "__main__":
 
     (gps_port_name, sensing_port_name, radio_port_name) = identify_ports()
 
+    boot_success = True
+
     if gps_port_name == -1:
         print("Could not locate GPS port!")
+        boot_success = False
     else:
         print("Found gps on port: " + gps_port_name)
 
     if sensing_port_name == -1:
         print("Could not locate Arduino Sensing port!")
+        boot_success = False
     else:
         print("Found Arduino sensing board on port: " + sensing_port_name)
 
     if radio_port_name == -1:
         print("Could not locate Arduino LoRa Radio!")
+        boot_success = False
     else:
         print("Found Arduino Lora Radio on port: " + radio_port_name)
 
@@ -152,20 +160,25 @@ if __name__ == "__main__":
         gps_serial_port = serial.Serial(gps_port_name, baudrate=9600, timeout=10)
     except:
         print("Failure opening GPS port!")
+        boot_success = False
 
     ##attempt to load Arduino sensing unit
     try:
         sensing_serial_port = serial.Serial(sensing_port_name, baudrate=9600, timeout=10)
     except:
         print("Failure opening Arduino Sensing port!")
+        boot_success = False
 
     ##attempt to load Arduino sensing unit
     try:
         radio_serial_port = serial.Serial(radio_port_name, baudrate=9600, timeout=10)
     except:
         print("Failure opening Arduino Lora Radio port!")
+        boot_success = False
 
-
+    if not boot_success:
+        print("Boot up sequence failure. Exiting.")
+        exit(-1)
 
     ##
     # Configure GPS Unit via Adafruit GPS Library
@@ -195,23 +208,25 @@ if __name__ == "__main__":
         # Keep track of loop timing
         currentTime = int(time.time())
 
-        #get the latest latitude and longitude
+        # get the latest latitude and longitude
         (latitude, longitude) = get_GPS_update(gps_object)
 
-        #get the latest environmental information
-        (humidity,pressure,altitude,temp,xAccel,yAccel,zAccel) = get_environment_update(sensing_serial_port)
+        # get the latest environmental information
+        (humidity, pressure, altitude, temp, xAccel, yAccel, zAccel) = get_environment_update(sensing_serial_port)
 
-
-        #print out a message every so often
+        # print out a message every so often
         if currentTime - last_print >= 1.0:
-            last_print=currentTime
+            last_print = currentTime
 
             print("Location: " + str(latitude) + "," + str(longitude))
-            print("Environmental Conditions: "+"Humdity: "+str(humidity)+" Pressure: "+str(pressure)+" Altitude: "+str(altitude)
-            +" Temp: "+str(temp)+" xAccel: "+str(xAccel)+" yAccel: "+str(yAccel)+" zAccel: "+str(zAccel))
+            print("Environmental Conditions: " + "Humdity: " + str(humidity) + " Pressure: " + str(
+                pressure) + " Altitude: " + str(altitude)
+                  + " Temp: " + str(temp) + " xAccel: " + str(xAccel) + " yAccel: " + str(yAccel) + " zAccel: " + str(
+                zAccel))
 
             # concatenate string
-            data_string = str(latitude) + "," + str(longitude)+","+str(humidity)+","+str(pressure)+","+str(altitude)+","+str(temp)+","+str(xAccel)+","+str(yAccel)+","+str(zAccel)
+            data_string = str(latitude) + "," + str(longitude) + "," + str(humidity) + "," + str(pressure) + "," + str(
+                altitude) + "," + str(temp) + "," + str(xAccel) + "," + str(yAccel) + "," + str(zAccel)
 
             # convert from string to bytes
             buoy_data = str.encode(data_string)
