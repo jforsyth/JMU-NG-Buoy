@@ -14,6 +14,7 @@ def identify_ports():
 
     gps_device = -1
     sensing_device = -1
+    radio_device = -1
 
     for port_candidate in ports_list:
         port_name = port_candidate.device
@@ -44,6 +45,9 @@ def identify_ports():
             elif '$' in splits[0]:
                 # print("Found the GPS board...")
                 gps_device = port_name
+            elif splits[0] == '!':
+                #print("Found the Radio board...")
+                radio_device = port_name
             else:
                 # print("Unknown board..")
                 do_nothing = 0
@@ -53,7 +57,7 @@ def identify_ports():
             # print("Exception occurred.")
             do_nothing = 0
 
-    return gps_device, sensing_device
+    return gps_device, sensing_device, radio_device
 
 def get_GPS_update(gps):
     if not gps.has_fix:
@@ -120,8 +124,9 @@ if __name__ == "__main__":
 
     gps_port_name = -1
     sensing_port_name = -1
+    radio_port_name = -1
 
-    (gps_port_name, sensing_port_name) = identify_ports()
+    (gps_port_name, sensing_port_name, radio_port_name) = identify_ports()
 
     if gps_port_name == -1:
         print("Could not locate GPS port!")
@@ -133,6 +138,11 @@ if __name__ == "__main__":
     else:
         print("Found Arduino sensing board on port: " + sensing_port_name)
 
+    if radio_port_name == -1:
+        print("Could not locate Arduino LoRa Radio!")
+    else:
+        print("Found Arduino Lora Radio on port: " + radio_port_name)
+
     ##
     # Open serial ports for all devices
     ##
@@ -142,13 +152,20 @@ if __name__ == "__main__":
         gps_serial_port = serial.Serial(gps_port_name, baudrate=9600, timeout=10)
     except:
         print("Failure opening GPS port!")
-        exit(-1)
 
     ##attempt to load Arduino sensing unit
     try:
         sensing_serial_port = serial.Serial(sensing_port_name, baudrate=9600, timeout=10)
     except:
         print("Failure opening Arduino Sensing port!")
+
+    ##attempt to load Arduino sensing unit
+    try:
+        radio_serial_port = serial.Serial(radio_port_name, baudrate=9600, timeout=10)
+    except:
+        print("Failure opening Arduino Lora Radio port!")
+
+
 
     ##
     # Configure GPS Unit via Adafruit GPS Library
@@ -191,7 +208,13 @@ if __name__ == "__main__":
 
             print("Location: " + str(latitude) + "," + str(longitude))
             print("Environmental Conditions: "+"Humdity: "+str(humidity)+" Pressure: "+str(pressure)+" Altitude: "+str(altitude)
-          +" Temp: "+str(temp)+" xAccel: "+str(xAccel)+" yAccel: "+str(yAccel)+" zAccel: "+str(zAccel))
+            +" Temp: "+str(temp)+" xAccel: "+str(xAccel)+" yAccel: "+str(yAccel)+" zAccel: "+str(zAccel))
 
+            # concatenate string
+            data_string = str(latitude) + "," + str(longitude)+","+str(humidity)+","+str(pressure)+","+str(altitude)+","+str(temp)+","+str(xAccel)+","+str(yAccel)+","+str(zAccel)
 
+            # convert from string to bytes
+            buoy_data = str.encode(data_string)
 
+            # send data
+            radio_serial_port.write(buoy_data)
