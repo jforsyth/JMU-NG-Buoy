@@ -1,7 +1,7 @@
 ## Original program based upon Adafruit Ultimate GPS Demo
 ## https://github.com/adafruit/Adafruit_CircuitPython_GPS/blob/master/examples/gps_simpletest.py
 ##
-## Modificcations made by Collete Higgins and Jason Forsyth (forsy2jb@jmu.ed)
+## Modifications made by Collete Higgins and Jason Forsyth (forsy2jb@jmu.ed)
 ##
 ##
 ## SPDX-FileCopyrightText: 2021 ladyada for Adafruit Industries
